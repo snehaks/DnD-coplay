@@ -5,3 +5,18 @@
 
 # Hugging Face token
 HF_TOKEN
+
+# Dependencies
+/node_modules
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Environment variables
+#.env
+
+# Build output
+/dist
+/build

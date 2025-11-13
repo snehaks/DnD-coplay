@@ -8,7 +8,7 @@ joinBtn.onclick = () => {
   const name = document.getElementById("name").value;
   const code = document.getElementById("code").value.trim().toUpperCase();
 
-  ws.send(JSON.stringify({
+  socket.send(JSON.stringify({
     type: "join",
     name,
     code
@@ -19,13 +19,13 @@ actionBtn.onclick = () => {
   const action = document.getElementById("action").value;
   document.getElementById("action").value = "";
 
-  ws.send(JSON.stringify({
+  socket.send(JSON.stringify({
     type: "action",
     action
   }));
 };
 
-ws.onmessage = (event) => {
+socket.onmessage = (event) => {
   const data = JSON.parse(event.data);
 
   if (data.type === "story") {
