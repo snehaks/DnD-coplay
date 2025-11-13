@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Source+Sans+3:wght@300;400;600&display=swap');
+
+/* Fantasy parchment theme for DnD UI */
+:root{
+    /* Palette */
+    --bg-plain: #efe6d6;
+    --parchment-warm: #f4ebd8;
+    --parchment-ochre: #e6d3a8;
+    --ink: #2b2a27;
+    --muted-ink: #5b5350;
+    --accent: #7b3f00; /* deep leather/blood accent */
+    --accent-2: #3b6b6b; /* teal rune accent */
+    --shadow: rgba(20,14,8,0.35);
+
+    /* spacing & sizes */
+    --page-max: 980px;
+    --gutter: 28px;
+    --radius: 10px;
+
+    /* typography */
+    --body-font: 'Source Sans 3', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    --display-font: 'Cinzel', Georgia, "Times New Roman", serif;
+    --base-font-size: 16px;
+    --line-height: 1.55;
+}
+
+/* Full-viewport parchment background */
+html,body{
+    height:100%;
+    margin:0;
+    background-color:var(--bg-plain);
+    color:var(--ink);
+    font-family:var(--body-font);
+    font-size:var(--base-font-size);
+    line-height:var(--line-height);
+}
+
+/* layered parchment texture */
+body{
+    background-image:
+        radial-gradient(ellipse at 10% 10%, rgba(255,255,255,0.35), transparent 12%),
+        radial-gradient(ellipse at 90% 85%, rgba(255,255,255,0.20), transparent 12%),
+        linear-gradient(180deg, rgba(230,215,170,0.15), rgba(245,235,200,0.12)),
+        repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0 1px, transparent 1px 24px),
+        linear-gradient(180deg, var(--parchment-warm), var(--parchment-ochre));
+    background-blend-mode: overlay, overlay, normal, multiply, normal;
+    background-attachment: fixed;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    padding:48px 32px;
+    box-sizing:border-box;
+}
+
+/* Page container */
+.page{
+    max-width:var(--page-max);
+    margin:0 auto;
+    padding:var(--gutter);
+    background: linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0.15));
+    border-radius:calc(var(--radius) + 4px);
+    box-shadow: 0 18px 40px rgba(10,6,4,0.45), inset 0 2px 0 rgba(255,255,255,0.4);
+    border:1px solid rgba(60,40,20,0.08);
+}
+
+/* Headings: carved/inscribed look */
+h1,h2,h3,h4{
+    font-family:var(--display-font);
+    color:var(--accent);
+    margin:0 0 10px 0;
+    letter-spacing:0.06em;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.5), 0 2px 6px rgba(0,0,0,0.18);
+}
+h1{ font-size:2.25rem; font-weight:700; }
+h2{ font-size:1.45rem; font-weight:600; }
+h3{ font-size:1.1rem; font-weight:500; }
+
+/* Body text & small utility text */
+p{ margin:0 0 1rem 0; color:var(--muted-ink); }
+.lead{ color:var(--ink); font-weight:600; }
+
+/* Decorative divider (parchment tear / ink line) */
+.divider{
+    height:2px;
+    background: linear-gradient(90deg, transparent, rgba(120,60,20,0.6), transparent);
+    margin:18px 0;
+    border-radius:2px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset;
+}
+
+/* Blockquote as scroll/panel */
+blockquote{
+    margin:1rem 0;
+    padding:18px 22px;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.25), rgba(250,240,220,0.18));
+    border-left:6px solid rgba(120,60,20,0.9);
+    border-radius:8px;
+    box-shadow: 0 8px 18px rgba(10,8,6,0.18), inset 0 2px 0 rgba(255,255,255,0.35);
+    color:var(--ink);
+    font-style:italic;
+    position:relative;
+}
+
+/* "Torn" edge accent */
+blockquote::before{
+    content:"";
+    position:absolute;
+    left: -12px;
+    top: 8px;
+    width:18px;
+    height:18px;
+    background: radial-gradient(circle at 30% 30%, rgba(0,0,0,0.06), transparent 35%),
+                            linear-gradient(180deg, rgba(255,255,255,0.4), rgba(0,0,0,0.02));
+    border-radius:50%;
+    box-shadow: -6px 6px 10px rgba(0,0,0,0.06);
+}
+
+/* Scroll-like panels */
+.scroll{
+    padding:22px;
+    background:
+        linear-gradient(180deg, rgba(255,250,240,0.95), rgba(244,230,200,0.85));
+    border:1px solid rgba(110,80,40,0.12);
+    border-radius:6px;
+    box-shadow: 0 14px 28px rgba(20,12,8,0.25), inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+/* Cards for stat blocks, items, NPCs */
+.card{
+    display:block;
+    background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(245,235,210,0.35));
+    border-radius:8px;
+    padding:14px;
+    margin:12px 0;
+    border:1px solid rgba(60,40,20,0.08);
+    box-shadow: 0 8px 18px rgba(10,6,4,0.12);
+}
+
+/* Small badges / runes */
+.badge{
+    display:inline-block;
+    padding:4px 8px;
+    font-size:0.85rem;
+    border-radius:999px;
+    background: linear-gradient(180deg, rgba(120,60,20,0.12), rgba(120,60,20,0.06));
+    color:var(--accent);
+    border:1px solid rgba(120,60,20,0.12);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08) inset;
+}
+
+/* Accent text and links */
+a{ color:var(--accent-2); text-decoration:underline dotted; }
+a:hover{ color:var(--accent); text-decoration:underline; }
+
+/* Footer / metadata */
+.meta{
+    font-size:0.85rem;
+    color:var(--muted-ink);
+    margin-top:8px;
+}
+
+/* Table styling appropriate for stat blocks */
+table{
+    border-collapse:separate;
+    border-spacing:6px;
+    width:100%;
+    margin:8px 0;
+    color:var(--ink);
+    font-size:0.95rem;
+}
+th{
+    text-align:left;
+    font-family:var(--display-font);
+    color:var(--accent);
+    font-weight:600;
+    font-size:0.95rem;
+}
+td{
+    background: rgba(255,255,255,0.35);
+    padding:8px;
+    border-radius:6px;
+    border:1px solid rgba(60,40,20,0.06);
+    box-shadow: 0 3px 10px rgba(10,6,4,0.06) inset;
+}
+
+/* Utility classes for emphasis */
+.strong{ font-weight:700; color:var(--ink); }
+.muted{ color:var(--muted-ink); font-size:0.95rem; }
+.important{ color:var(--accent); font-weight:700; }
+
+/* Tiny decorative runes for list bullets */
+ul.runes{
+    list-style:none;
+    padding-left:0;
+}
+ul.runes li{
+    position:relative;
+    padding-left:28px;
+    margin:8px 0;
+}
+ul.runes li::before{
+    content:"✦";
+    position:absolute;
+    left:0;
+    top:0;
+    color:var(--accent-2);
+    font-weight:700;
+    transform:translateY(-2px);
+    text-shadow:0 1px 0 rgba(255,255,255,0.35);
+}
+
+/* Small screens: reduce padding */
+@media (max-width:640px){
+    body{ padding:24px 14px; }
+    .page{ padding:18px; }
+    h1{ font-size:1.6rem; }
+}

@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DnD Coplay — Homepage</title>
+    <style>
+        :root{--bg:#0f1724;--panel:#0b1220;--accent:#7dd3fc;--muted:#94a3b8;color-scheme:dark}
+        *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
+        body{margin:0;padding:20px;background:linear-gradient(180deg,#071028 0%, #071428 60%),var(--bg);color:#e6eef6}
+        header{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+        h1{font-size:1.1rem;margin:0}
+        .row{display:flex;gap:12px;flex-wrap:wrap}
+        .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:10px;min-width:260px;flex:1;box-shadow:0 4px 18px rgba(2,6,23,0.6)}
+        label{display:block;font-size:0.78rem;color:var(--muted);margin-bottom:6px}
+        input[type="text"], input[type="number"], select, textarea{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+        button{background:var(--accent);color:#052029;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
+        button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+        .players{display:flex;gap:12px}
+        .player-card{padding:8px;border-radius:8px;background:rgba(255,255,255,0.01);flex:1}
+        .hp{font-weight:700;color:#ffd6d6}
+        .log{height:220px;overflow:auto;background:rgba(0,0,0,0.12);padding:8px;border-radius:6px;font-size:0.9rem}
+        .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+        small{color:var(--muted)}
+        footer{margin-top:12px;color:var(--muted);font-size:0.8rem}
+        .role-tabs{display:flex;gap:6px}
+        .role-tabs button{padding:6px 8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted)}
+        .role-tabs button.active{background:var(--accent);color:#052029}
+        .code{font-family:monospace;background:#031427;padding:8px;border-radius:6px;overflow:auto;max-height:120px}
+    </style>
+</head>
+<body>
+    <header>
+        <h1>DnD Coplay — Text Table (2 players + DM)</h1>
+        <div style="margin-left:auto">
+            <div class="role-tabs" id="roleTabs">
+                <button data-role="player1" class="active">Player 1</button>
+                <button data-role="player2">Player 2</button>
+                <button data-role="dm">Dungeon Master</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="row">
+        <section class="panel" style="max-width:520px">
+            <label>Game state (auto-sync via URL hash). Share the current page URL with the other device to load state.</label>
+            <div class="controls" style="margin-bottom:8px">
+                <button id="exportBtn">Export Game Code</button>
+                <button id="importBtn" class="ghost">Import Code</button>
+                <button id="resetBtn" class="ghost">Reset</button>
+            </div>
+            <div id="codeArea" class="code" aria-live="polite"></div>
+            <div style="margin-top:8px">
+                <small>Or paste a code below to load (use with the Import button):</small>
+                <textarea id="importInput" rows="3" style="margin-top:6px"></textarea>
+                <div style="margin-top:8px" class="controls">
+                    <button id="loadCode">Load</button>
+                    <button id="copyUrl" class="ghost">Copy Share URL</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel" id="gamePanel">
+            <label>Players</label>
+            <div class="players" id="playersWrap">
+                <!-- player cards injected -->
+            </div>
+
+            <div style="margin-top:10px">
+                <label>Action / Chat</label>
+                <div style="display:flex;gap:8px">
+                    <select id="actionType">
+                        <option value="chat">Chat</option>
+                        <option value="roll">Roll d20</option>
+                        <option value="attack">Attack (enter damage)</option>
+                        <option value="heal">Heal</option>
+                        <option value="note">DM Note (private)</option>
+                    </select>
+                    <input id="actionText" type="text" placeholder="Message or damage value" />
+                    <select id="targetSelect">
+                        <option value="player2">Target: Player 2</option>
+                        <option value="player1">Target: Player 1</option>
+                        <option value="both">Target: Both</option>
+                    </select>
+                    <button id="doAction">Send</button>
+                </div>
+            </div>
+
+            <div style="margin-top:10px">
+                <label>Game Log</label>
+                <div id="log" class="log"></div>
+            </div>
+        </section>
+
+        <section class="panel" style="max-width:320px">
+            <label>Quick settings</label>
+            <div style="display:flex;gap:8px">
+                <input id="p1Name" type="text" placeholder="Player 1 name" />
+                <input id="p2Name" type="text" placeholder="Player 2 name" />
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+                <input id="p1HP" type="number" min="0" placeholder="P1 HP" />
+                <input id="p2HP" type="number" min="0" placeholder="P2 HP" />
+            </div>
+            <div class="controls" style="margin-top:8px">
+                <button id="applyNames">Apply</button>
+                <button id="swapBtn" class="ghost">Swap Views</button>
+            </div>
+
+            <div style="margin-top:16px">
+                <label>DM Tools</label>
+                <div class="controls" style="margin-top:6px">
+                    <button id="dmReveal" class="ghost">Reveal Secret</button>
+                    <button id="dmAdjustHP" class="ghost">Adjust HP (DM)</button>
+                </div>
+            </div>
+
+            <footer>
+                <small>Tip: use the "Copy Share URL" then open it on the second device to synchronize instantly. No server required.</small>
+            </footer>
+        </section>
+    </main>
+
+    <script>
+        // Minimal single-file text-based co-play using URL hash for sync.
+        const defaultState = {
+            players: {
+                player1: { name: 'Player 1', hp: 12 },
+                player2: { name: 'Player 2', hp: 12 }
+            },
+            log: [
+                { t: Date.now(), who: 'system', text: 'Game started. Share the page URL with others to sync.' }
+            ],
+            lastRole: 'player1'
+        };
+
+        const el = id => document.getElementById(id);
+        const roleButtons = document.querySelectorAll('#roleTabs button');
+
+        function stateToCode(s) {
+            return btoa(unescape(encodeURIComponent(JSON.stringify(s))));
+        }
+        function codeToState(code) {
+            try {
+                const json = decodeURIComponent(escape(atob(code.trim())));
+                return JSON.parse(json);
+            } catch(e) {
+                return null;
+            }
+        }
+
+        // load from URL hash if present
+        let state = (location.hash && codeToState(location.hash.slice(1))) || structuredClone(defaultState);
+
+        function saveToHash() {
+            try {
+                location.hash = stateToCode(state);
+            } catch(e) { /* ignore */ }
+            renderCode();
+        }
+
+        function pushLog(who, text) {
+            state.log.push({ t: Date.now(), who, text });
+            // keep last 200 entries
+            if (state.log.length > 200) state.log = state.log.slice(-200);
+            saveToHash();
+            renderLog();
+        }
+
+        function renderCode() {
+            el('codeArea').textContent = stateToCode(state);
+        }
+
+        function renderPlayers() {
+            const wrap = el('playersWrap');
+            wrap.innerHTML = '';
+            ['player1','player2'].forEach(k=>{
+                const p = state.players[k];
+                const card = document.createElement('div');
+                card.className = 'player-card';
+                card.innerHTML = `
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <strong>${p.name}</strong>
+                        <small class="hp">${p.hp} HP</small>
+                    </div>
+                    <div style="margin-top:8px;display:flex;gap:8px">
+                        <button data-action="roll" data-for="${k}">Roll d20</button>
+                        <button data-action="short" data-for="${k}">Short Rest +1 HP</button>
+                        <button data-action="dm" data-for="${k}" class="ghost">Private Note</button>
+                    </div>
+                `;
+                wrap.appendChild(card);
+            });
+        }
+
+        function renderLog() {
+            const logEl = el('log');
+            logEl.innerHTML = '';
+            state.log.slice().reverse().forEach(entry=>{
+                const d = new Date(entry.t);
+                const who = entry.who || 'system';
+                const date = d.toLocaleTimeString();
+                const div = document.createElement('div');
+                div.style.marginBottom = '8px';
+                div.innerHTML = `<small style="color:var(--muted)">${date}</small><div><strong>${escapeHtml(who)}:</strong> ${escapeHtml(entry.text)}</div>`;
+                logEl.appendChild(div);
+            });
+        }
+
+        function escapeHtml(s){ return String(s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])) }
+
+        // actions
+        function rollDie(sides=20){ return Math.floor(Math.random()*sides)+1 }
+
+        // UI actions
+        document.addEventListener('click', e=>{
+            if (e.target.matches('#doAction')) {
+                doAction();
+            } else if (e.target.matches('#exportBtn')) {
+                el('importInput').value = stateToCode(state);
+                pushLog('system', 'Exported game code to the text area.');
+            } else if (e.target.matches('#loadCode')) {
+                const code = el('importInput').value.trim();
+                const s = codeToState(code);
+                if (s) { state = s; saveToHash(); renderAll(); pushLog('system','Imported game state.'); }
+                else alert('Invalid code.');
+            } else if (e.target.matches('#copyUrl')) {
+                navigator.clipboard?.writeText(location.href).then(()=>pushLog('system','Share URL copied to clipboard.'));
+            } else if (e.target.matches('#resetBtn')) {
+                if (confirm('Reset game to defaults?')) { state = structuredClone(defaultState); saveToHash(); renderAll(); }
+            } else if (e.target.matches('#applyNames')) {
+                state.players.player1.name = el('p1Name').value || state.players.player1.name;
+                state.players.player2.name = el('p2Name').value || state.players.player2.name;
+                state.players.player1.hp = Number(el('p1HP').value) || state.players.player1.hp;
+                state.players.player2.hp = Number(el('p2HP').value) || state.players.player2.hp;
+                saveToHash(); renderAll(); pushLog('system','Updated names / HP.');
+            } else if (e.target.matches('#swapBtn')) {
+                const last = state.lastRole === 'player1' ? 'player2' : 'player1';
+                state.lastRole = last;
+                setActiveRole(last);
+                pushLog('system', `Switched view to ${last}.`);
+            } else if (e.target.matches('#dmReveal')) {
+                const secret = prompt('Enter secret to reveal:');
+                if (secret) { pushLog('DM (secret)', secret); }
+            } else if (e.target.matches('#dmAdjustHP')) {
+                const who = prompt('Who to adjust? (player1/player2)');
+                const delta = parseInt(prompt('HP delta (e.g. -3 or 5)'),10);
+                if (who && !isNaN(delta) && state.players[who]) {
+                    state.players[who].hp += delta;
+                    if (state.players[who].hp < 0) state.players[who].hp = 0;
+                    saveToHash(); renderAll();
+                    pushLog('DM', `${who} HP adjusted by ${delta}. Now ${state.players[who].hp} HP.`);
+                } else alert('Invalid input.');
+            } else if (e.target.matches('.player-card button')) {
+                const act = e.target.dataset.action;
+                const who = e.target.dataset.for;
+                if (act === 'roll') {
+                    const r = rollDie(20);
+                    pushLog(state.players[who].name, `rolled d20 → ${r}`);
+                } else if (act === 'short') {
+                    state.players[who].hp += 1;
+                    saveToHash(); renderAll();
+                    pushLog('system', `${state.players[who].name} takes a short rest (+1 HP).`);
+                } else if (act === 'dm') {
+                    const note = prompt('Enter private note (will appear as DM note in log):');
+                    if (note) pushLog('DM (private)', `${state.players[who].name}: ${note}`);
+                }
+            } else if (e.target.matches('#importBtn')) {
+                el('importInput').focus();
+            }
+        });
+
+        function doAction() {
+            const type = el('actionType').value;
+            const text = el('actionText').value.trim();
+            const target = el('targetSelect').value;
+            const role = state.lastRole || 'player1';
+            if (type === 'chat') {
+                if (!text) return alert('Enter a message.');
+                pushLog(state.players[role]?.name || role, text);
+                el('actionText').value = '';
+            } else if (type === 'roll') {
+                const r = rollDie(20);
+                pushLog(state.players[role]?.name || role, `rolled d20 → ${r}`);
+            } else if (type === 'attack') {
+                const dmg = parseInt(text,10);
+                if (isNaN(dmg)) return alert('Enter numeric damage value.');
+                applyDamage(target, dmg, role);
+                el('actionText').value = '';
+            } else if (type === 'heal') {
+                const amt = parseInt(text,10);
+                if (isNaN(amt)) return alert('Enter numeric heal value.');
+                applyHeal(target, amt, role);
+                el('actionText').value = '';
+            } else if (type === 'note') {
+                if (!text) return alert('Enter a note.');
+                pushLog('DM (note)', text);
+                el('actionText').value = '';
+            }
+        }
+
+        function applyDamage(target, dmg, actor) {
+            const targets = target === 'both' ? ['player1','player2'] : [target];
+            targets.forEach(t=>{
+                if (!state.players[t]) return;
+                state.players[t].hp -= dmg;
+                if (state.players[t].hp < 0) state.players[t].hp = 0;
+                pushLog(actor === 'player1' || actor === 'player2' ? state.players[actor].name : actor, `${actor} dealt ${dmg} to ${state.players[t].name} (${state.players[t].hp} HP left)`);
+            });
+            saveToHash();
+            renderAll();
+        }
+
+        function applyHeal(target, amt, actor) {
+            const targets = target === 'both' ? ['player1','player2'] : [target];
+            targets.forEach(t=>{
+                if (!state.players[t]) return;
+                state.players[t].hp += amt;
+                pushLog(actor === 'player1' || actor === 'player2' ? state.players[actor].name : actor, `${actor} healed ${state.players[t].name} for ${amt} (${state.players[t].hp} HP)`);
+            });
+            saveToHash();
+            renderAll();
+        }
+
+        // role switching UI
+        function setActiveRole(role) {
+            roleButtons.forEach(b => b.classList.toggle('active', b.dataset.role === role));
+            state.lastRole = role;
+            // adjust displayed controls to role
+            const actionType = el('actionType');
+            const targetSelect = el('targetSelect');
+            if (role === 'dm') {
+                actionType.querySelector('option[value="note"]').disabled = false;
+            } else {
+                actionType.querySelector('option[value="note"]').disabled = true;
+            }
+        }
+        roleButtons.forEach(btn=>{
+            btn.addEventListener('click', ()=> {
+                setActiveRole(btn.dataset.role);
+                pushLog('system', `View switched to ${btn.dataset.role}`);
+            });
+        });
+
+        // when hash changes (other device opens shared URL) -> load
+        window.addEventListener('hashchange', ()=>{
+            const code = location.hash.slice(1);
+            const s = codeToState(code);
+            if (s) { state = s; renderAll(); pushLog('system','State loaded from URL hash.'); }
+        });
+
+        function renderAll(){
+            renderCode();
+            renderPlayers();
+            renderLog();
+            // fill quick inputs
+            el('p1Name').value = state.players.player1.name;
+            el('p2Name').value = state.players.player2.name;
+            el('p1HP').value = state.players.player1.hp;
+            el('p2HP').value = state.players.player2.hp;
+            setActiveRole(state.lastRole || 'player1');
+        }
+
+        // initial render
+        renderAll();
+
+        // helper: structuredClone fallback for older browsers
+        function structuredClone(obj){
+            return JSON.parse(JSON.stringify(obj));
+        }
+    </script>
+</body>
+</html>
