@@ -47,48 +47,45 @@ export async function handlePlayerAction(ws, action) {
   const game = getGameForPlayer(ws);
   if (!game) return "Error: Game not found.";
 
-  // Build prompt from existing story + the new action
-  const prompt = `
-You are a friendly Dungeon Master narrating a simple, fun D&D-style adventure for two kids.
+  const prompt = `You are a friendly Dungeon Master narrating a simple, fun D&D-style adventure for two kids.
 The story so far:
-
 ${game.story.join("\n")}
 
 The players just did: "${action}"
 
-Continue the story in 2–4 sentences. 
-Make it exciting but age-appropriate, no violence.
-End with a question or choice for the players.
+Continue the story in 2–4 sentences. Make it exciting but age-appropriate, no gore. End with a question or choice for the players.
 `;
 
-  // Free HuggingFace inference model (no key needed)
-  const response = await fetch(
-    "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta",
-    {
+  // Choose a model endpoint
+  const hfModel = process.env.HF_MODEL || "HuggingFaceH4/zephyr-7b-beta";
+  const hfUrl = `https://api-inference.huggingface.co/models/${hfModel}`;
+
+  const headers = { "Content-Type": "application/json" };
+  if (process.env.HF_TOKEN) headers["Authorization"] = `Bearer ${process.env.HF_TOKEN}`;
+
+  let aiText = "The adventure continues...";
+  try {
+    const res = await fetch(hfUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ inputs: prompt })
-    }
-  );
+      headers,
+      body: JSON.stringify({ inputs: prompt, options: { wait_for_model: true } })
+    });
+    const json = await res.json();
 
-  const result = await response.json();
+    // Many HF hosted inference responses put generated text in different places
+    aiText = json?.generated_text || json?.[0]?.generated_text || json?.[0]?.generated_text?.[0] || JSON.stringify(json);
 
-  // Extract generated text safely
-  const aiText =
-    result?.generated_text ||
-    result?.[0]?.generated_text ||
-    "The adventure continues...";
+    // If model echoes the prompt, trim it
+    if (aiText.includes(prompt)) aiText = aiText.split(prompt).pop().trim();
+    aiText = aiText.trim();
+  } catch (err) {
+    console.error("AI call error:", err);
+    aiText = "The DM pauses for a moment, thinking... The adventure continues.";
+  }
 
-  // Trim extra prompt if model echoes it
-  const cleaned = aiText.replace(prompt, "").trim();
-
-  // Add to story history
-  game.story.push(cleaned);
-
-  // Broadcast to all players
-  broadcast(game, cleaned);
-
-  return cleaned;
+  // Save to story and return
+  game.story.push(`${aiText}`);
+  return aiText;
 }
 
 
