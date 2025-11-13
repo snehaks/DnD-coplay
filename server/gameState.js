@@ -58,9 +58,12 @@ Continue the story in 2–4 sentences. Make it exciting but age-appropriate, no 
 
   // Choose a model endpoint
   const hfModel = process.env.HF_MODEL || "HuggingFaceH4/zephyr-7b-beta";
-  const hfUrl = `https://api-inference.huggingface.co/models/${hfModel}`;
+  const hfUrl = `https://router.huggingface.co/hf-inference/${hfModel}`;
 
-  const headers = { "Content-Type": "application/json" };
+  const headers ={ 
+    "Authorization": `Bearer ${process.env.HF_TOKEN}`,
+    "Content-Type": "application/json"
+  };
   if (process.env.HF_TOKEN) headers["Authorization"] = `Bearer ${process.env.HF_TOKEN}`;
 
   let aiText = "The adventure continues...";
