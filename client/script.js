@@ -1,6 +1,6 @@
-//const socket = new WebSocket("wss://your-render-app.onrender.com");
+const socket = new WebSocket("wss://dnd-coplay.onrender.com");
 //const socket = new WebSocket("ws://localhost:3000");
-const socket = new WebSocket(`ws://${window.location.host}`);
+//const socket = new WebSocket(`ws://${window.location.host}`);
 
 const storyDiv = document.getElementById("story");
 const playerNameInput = document.getElementById("playerName");
