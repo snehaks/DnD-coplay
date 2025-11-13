@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AI Dungeon (2-Player)</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <title>AI Co-Play DM</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="game">
-    <h2>AI Dungeon</h2>
-    <div id="story"></div>
-    <input id="playerName" placeholder="Your name" />
-    <input id="gameCode" placeholder="Game code" />
-    <button id="joinBtn">Join Game</button>
+  <!-- JOIN SECTION -->
+<div id="join-section">
+  <input id="name" placeholder="Your name">
+  <input id="code" placeholder="Game code">
+  <button id="joinBtn">Join Game</button>
+</div>
 
-    <div id="inputArea" style="display:none;">
-      <p id="turnInfo"></p>
-      <input id="action" placeholder="What do you do?" />
-      <button id="sendBtn">Send</button>
-    </div>
-  </div>
+<!-- GAME SECTION (HIDDEN UNTIL JOINED) -->
+<div id="game-section" style="display:none;">
+  <textarea id="story" rows="12" readonly></textarea>
+  <input id="action" placeholder="What do you do?">
+  <button id="actionBtn">Send Action</button>
+</div>
+
 
   <script src="script.js"></script>
 </body>

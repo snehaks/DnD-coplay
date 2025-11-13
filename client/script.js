@@ -1,35 +1,43 @@
 const socket = new WebSocket("wss://dnd-coplay.onrender.com");
-//const socket = new WebSocket("ws://localhost:3000");
-//const socket = new WebSocket(`ws://${window.location.host}`);
+//const ws = new WebSocket(`ws://${window.location.host}`);
 
-const storyDiv = document.getElementById("story");
-const playerNameInput = document.getElementById("playerName");
-const gameCodeInput = document.getElementById("gameCode");
-const actionInput = document.getElementById("action");
-const turnInfo = document.getElementById("turnInfo");
+const joinBtn = document.getElementById("joinBtn");
+const actionBtn = document.getElementById("actionBtn");
 
-document.getElementById("joinBtn").onclick = () => {
-  socket.send(JSON.stringify({
+joinBtn.onclick = () => {
+  const name = document.getElementById("name").value;
+  const code = document.getElementById("code").value.trim().toUpperCase();
+
+  ws.send(JSON.stringify({
     type: "join",
-    name: playerNameInput.value,
-    code: gameCodeInput.value
+    name,
+    code
   }));
 };
 
-document.getElementById("sendBtn").onclick = () => {
-  socket.send(JSON.stringify({
+actionBtn.onclick = () => {
+  const action = document.getElementById("action").value;
+  document.getElementById("action").value = "";
+
+  ws.send(JSON.stringify({
     type: "action",
-    action: actionInput.value
+    action
   }));
-  actionInput.value = "";
 };
 
-socket.onmessage = (event) => {
-  const msg = JSON.parse(event.data);
-  if (msg.type === "story") {
-    storyDiv.innerHTML += `<p>${msg.text}</p>`;
-  } else if (msg.type === "turn") {
-    turnInfo.innerText = `Your turn: ${msg.player}`;
-    document.getElementById("inputArea").style.display = "block";
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+
+  if (data.type === "story") {
+    // Hide join UI
+    document.getElementById("join-section").style.display = "none";
+
+    // Show gameplay UI
+    document.getElementById("game-section").style.display = "block";
+
+    // Append new story text
+    const storyBox = document.getElementById("story");
+    storyBox.value += data.text + "\n\n";
+    storyBox.scrollTop = storyBox.scrollHeight;
   }
 };
