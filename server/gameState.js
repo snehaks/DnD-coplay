@@ -47,6 +47,11 @@ export async function handlePlayerAction(ws, action) {
   const game = getGameForPlayer(ws);
   if (!game) return "Error: Game not found.";
 
+  if (!process.env.HF_TOKEN) {
+    console.error("HF_TOKEN environment variable not set.");
+    return "The Dungeon Master is currently unavailable (missing API token).";
+  }
+
   const prompt = `You are a friendly Dungeon Master narrating a simple, fun D&D-style adventure for two kids.
 The story so far:
 ${game.story.join("\n")}
@@ -57,30 +62,37 @@ Continue the story in 2–4 sentences. Make it exciting but age-appropriate, no 
 `;
 
   // Choose a model endpoint
-  const hfModel = process.env.HF_MODEL || "meta-llama/Llama-3.1-8B-Instruct:novita";  
-  const hfUrl = `https://router.huggingface.co/hf-inference/${hfModel}`;
+  const hfModel = process.env.HF_MODEL || "meta-llama/Meta-Llama-3.1-8B-Instruct";  
+  const hfUrl = `https://api-inference.huggingface.co/models/${hfModel}`;
 
-  const headers ={ 
+  const headers = {
     "Authorization": `Bearer ${process.env.HF_TOKEN}`,
     "Content-Type": "application/json"
   };
-  //if (process.env.HF_TOKEN) headers["Authorization"] = `Bearer ${process.env.HF_TOKEN}`;
 
   let aiText = "The adventure continues...";
   try {
     const res = await fetch(hfUrl, {
       method: "POST",
       headers,
-      body: JSON.stringify({ inputs: prompt, options: { wait_for_model: true } })
+      body: JSON.stringify({ inputs: prompt, parameters: { return_full_text: false } })
     });
+
     const json = await res.json();
 
-    // Many HF hosted inference responses put generated text in different places
-    aiText = json?.generated_text || json?.[0]?.generated_text || json?.[0]?.generated_text?.[0] || JSON.stringify(json);
+    if (!res.ok || json.error) {
+      const errorMessage = json.error || `API request failed with status ${res.status}`;
+      console.error("AI call error:", errorMessage);
+      throw new Error(errorMessage);
+    }
 
-    // If model echoes the prompt, trim it
-    if (aiText.includes(prompt)) aiText = aiText.split(prompt).pop().trim();
-    aiText = aiText.trim();
+    // The standard API response is an array.
+    const generatedText = json?.[0]?.generated_text;
+
+    if (!generatedText) {
+      throw new Error("Invalid response structure from AI: " + JSON.stringify(json));
+    }
+    aiText = generatedText.trim();
   } catch (err) {
     console.error("AI call error:", err);
     aiText = "The DM pauses for a moment, thinking... The adventure continues.";
