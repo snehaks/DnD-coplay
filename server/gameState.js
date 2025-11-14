@@ -57,7 +57,7 @@ Continue the story in 2–4 sentences. Make it exciting but age-appropriate, no 
 `;
 
   // Choose a model endpoint
-  const hfModel = process.env.HF_MODEL || "meta-llama/Llama-3.1-8B-Instruct:novita"; 
+  const hfModel = process.env.HF_MODEL || "meta-llama/Llama-3.1-8B-Instruct:novita";  
   const hfUrl = `https://router.huggingface.co/hf-inference/${hfModel}`;
 
   const headers ={ 
