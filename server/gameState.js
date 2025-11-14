@@ -62,8 +62,8 @@ Continue the story in 2–4 sentences. Make it exciting but age-appropriate, no 
 `;
 
   // Choose a model endpoint
-  const hfModel = process.env.HF_MODEL || "meta-llama/Meta-Llama-3.1-8B-Instruct";  
-  const hfUrl = `https://api-inference.huggingface.co/models/${hfModel}`;
+  const hfModel = process.env.HF_MODEL || "meta-llama/Llama-3.1-8B-Instruct:novita";
+  const hfUrl = `https://router.huggingface.co/hf-inference/${hfModel}`;
 
   const headers = {
     "Authorization": `Bearer ${process.env.HF_TOKEN}`,
@@ -86,7 +86,7 @@ Continue the story in 2–4 sentences. Make it exciting but age-appropriate, no 
       throw new Error(errorMessage);
     }
 
-    // The standard API response is an array.
+    // The router standardizes the response to be an array.
     const generatedText = json?.[0]?.generated_text;
 
     if (!generatedText) {
